@@ -37,6 +37,7 @@ main:
 
     #################### Filtre CRT #######################
 
+    # TODO: Charger l'image inputCrt en appelant loadImage()
     # loadImage(inputCrt, imgCrt)
     leal    -12(%ebp), %eax
     pushl   %eax
@@ -47,6 +48,7 @@ main:
     testl   %eax, %eax
     jz      end_main
 
+    # TODO: Appliquer le filtre crtFilter() sur cette image
     # crtFilter(imgCrt, 2)
     pushl   $2
     leal    -12(%ebp), %eax
@@ -54,6 +56,7 @@ main:
     call    crtFilter
     addl    $8, %esp
 
+    # TODO: Sauvegarder cette image dans le fichier outputCrt avec saveImage()
     # saveImage(outputCrt, imgCrt)
     leal    -12(%ebp), %eax
     pushl   %eax
@@ -61,6 +64,7 @@ main:
     call    saveImage
     addl    $8, %esp
 
+    # TODO: Libérer la mémoire de vos images avec freeImage()
     # freeImage(imgCrt)
     leal    -12(%ebp), %eax
     pushl   %eax
@@ -77,9 +81,7 @@ main:
     call    createImage
     addl    $8, %esp
 
-    # sierpinskiImage(0, 0, 1024, imgSierpinski, {227,171,59,255})
-    # Pixel = r,g,b,a = E3 AB 3B FF
-    # little-endian 32-bit immediate = 0xFF3BABE3
+ 
     pushl   $0xFF3BABE3
     leal    -24(%ebp), %eax
     pushl   %eax
