@@ -15,6 +15,7 @@ Il faut parcourir TOUS les pixels et appliquer les traitements suivants:
         Le paramètre subpixel est déterminé par la position horizontale du pixel : x % 3
 
 */
+
 .data   
 
 full_color:
@@ -32,80 +33,75 @@ max_index:
 crtFilter:
     # prologue
     pushl   %ebp                      
-    movl    %esp, %ebp
+    movl    %esp, %ebp                  
 
     pushl   %ebx
     pushl   %esi
     pushl   %edi
 
-    # récupérer Image*
-    movl    8(%ebp), %eax
-    movl    0(%eax), %ebx      # largeur
-    movl    4(%eax), %edx      # hauteur
-    movl    8(%eax), %esi      # pixels (Pixel**)
+    subl    $4, %esp              # variable locale: y
 
-    xorl    %ecx, %ecx         # y = 0
+    movl    $0, -4(%ebp)          # y = 0
 
 y_loop:
-    cmpl    %edx, %ecx
-    jge     end_filter
+    /* if (y >= img.hauteur) end */
+    movl    8(%ebp), %eax         # &img
+    movl    -4(%ebp), %ecx        # y
+    cmpl    4(%eax), %ecx         # comparer y avec hauteur
+    jge     end_crt
 
-    xorl    %eax, %eax         # x = 0
+    movl    $0, %edi              # x = 0
 
-x_loop:
-    cmpl    %ebx, %eax
+x_loop: # if (x >= img.largeur) prochaine ligne
+    movl    8(%ebp), %eax         # &img
+    cmpl    0(%eax), %edi         # comparer x avec largeur
     jge     next_row
 
-    # adresse du pixel : pixels[y][x]
-    movl    (%esi,%ecx,4), %edi
-    lea     (%edi,%eax,4), %edi
+    # récupérer l'adresse du pixel img.pixels[y][x]
+    movl    8(%eax), %ebx         # ebx = img.pixels (Pixel**)
+    movl    -4(%ebp), %ecx        # ecx = y
+    movl    (%ebx,%ecx,4), %esi   # esi = img.pixels[y] (Pixel*)
+    leal    (%esi,%edi,4), %esi   # esi = &img.pixels[y][x]
 
-    # sauvegarder x pour plus tard
-    pushl   %eax
-
-############ SCANLINE ############
-
-    movl    %ecx, %eax
+    # si y % scanlineSpacing == 0 => applyScanline(pixel, 60)
+    movl    -4(%ebp), %eax        # eax = y
     xorl    %edx, %edx
-    movl    12(%ebp), %ecx     # scanlineSpacing
-    divl    %ecx
-
+    movl    12(%ebp), %ecx        # ecx = scanlineSpacing
+    divl    %ecx                  # reste dans edx
     cmpl    $0, %edx
-    jne     skip_scan
+    jne     skip_scanline
 
-    pushl   $60
-    pushl   %edi
+    pushl   less_color            # 60
+    pushl   %esi                  # &pixel
     call    applyScanline
     addl    $8, %esp
 
-skip_scan:
-
-############ PHOSPHOR ############
-
-    popl    %eax               # restaurer x
-
+skip_scanline:
+    # applyPhosphor(pixel, x % 3)
+    movl    %edi, %eax            # eax = x
     xorl    %edx, %edx
-    movl    $3, %ecx
-    divl    %ecx               # edx = x % 3
+    movl    max_index, %ecx       # ecx = 3
+    divl    %ecx                  # reste dans edx = x % 3
 
-    pushl   %edx
-    pushl   %edi
+    pushl   %edx                  # subpixel
+    pushl   %esi                  # &pixel
     call    applyPhosphor
     addl    $8, %esp
 
-############ NEXT PIXEL ###########
-
-    incl    %eax
+    incl    %edi                  # x++
     jmp     x_loop
 
 next_row:
-    incl    %ecx
+    incl    -4(%ebp)              # y++
     jmp     y_loop
 
-end_filter:
+end_crt:
+    addl    $4, %esp              # enlever variable locale
+
     popl    %edi
     popl    %esi
     popl    %ebx
-
-    leave
-    ret
+   
+    # epilogue
+    leave 
+    ret 
