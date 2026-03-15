@@ -52,11 +52,11 @@ sierpinskiImage:
     movl    20(%ebp), %eax         # eax = &img
 
     movl    8(%ebp), %ecx          # ecx = x
-    cmpl    0(%eax), %ecx          # x >= img.largeur ?
+    cmpl    0(%eax), %ecx          
     jge     end_sierpinski
 
     movl    12(%ebp), %ecx         # ecx = y
-    cmpl    4(%eax), %ecx          # y >= img.hauteur ?
+    cmpl    4(%eax), %ecx          
     jge     end_sierpinski
 
     ############################
@@ -67,14 +67,14 @@ sierpinskiImage:
     jne     recursive_case
 
     # img.pixels[y][x] = color
-    movl    8(%eax), %ebx          # ebx = img.pixels (Pixel**)
-    movl    12(%ebp), %ecx         # ecx = y
-    movl    (%ebx,%ecx,4), %esi    # esi = img.pixels[y] (Pixel*)
-    movl    8(%ebp), %edx          # edx = x
-    leal    (%esi,%edx,4), %edi    # edi = &img.pixels[y][x]
+    movl    8(%eax), %ebx          
+    movl    12(%ebp), %ecx         
+    movl    (%ebx,%ecx,4), %esi    
+    movl    8(%ebp), %edx         
+    leal    (%esi,%edx,4), %edi    
 
-    movl    24(%ebp), %ecx         # ecx = color (4 octets)
-    movl    %ecx, (%edi)           # écrire le pixel complet
+    movl    24(%ebp), %ecx        
+    movl    %ecx, (%edi)           
 
     jmp     end_sierpinski
 
@@ -83,22 +83,22 @@ recursive_case:
     # half = size / 2
     ############################
     movl    16(%ebp), %ebx
-    shrl    $1, %ebx               # ebx = half
+    shrl    $1, %ebx            
 
     ############################
     # 1) bas gauche
     # sierpinskiImage(x, y + half, half, img, color)
     ############################
-    pushl   24(%ebp)               # color
-    pushl   20(%ebp)               # &img
+    pushl   24(%ebp)             
+    pushl   20(%ebp)             
 
-    pushl   %ebx                   # size = half
+    pushl   %ebx                   
 
-    movl    12(%ebp), %eax         # y
-    addl    %ebx, %eax             # y + half
+    movl    12(%ebp), %eax        
+    addl    %ebx, %eax             
     pushl   %eax
 
-    pushl   8(%ebp)                # x
+    pushl   8(%ebp)                
     call    sierpinskiImage
     addl    $20, %esp
 
@@ -106,17 +106,17 @@ recursive_case:
     # 2) bas droite
     # sierpinskiImage(x + half, y + half, half, img, color)
     ############################
-    pushl   24(%ebp)               # color
-    pushl   20(%ebp)               # &img
+    pushl   24(%ebp)               
+    pushl   20(%ebp)               
 
-    pushl   %ebx                   # size = half
+    pushl   %ebx                   
 
-    movl    12(%ebp), %eax         # y
-    addl    %ebx, %eax             # y + half
+    movl    12(%ebp), %eax       
+    addl    %ebx, %eax             
     pushl   %eax
 
-    movl    8(%ebp), %eax          # x
-    addl    %ebx, %eax             # x + half
+    movl    8(%ebp), %eax         
+    addl    %ebx, %eax           
     pushl   %eax
 
     call    sierpinskiImage
@@ -126,16 +126,16 @@ recursive_case:
     # 3) haut
     # sierpinskiImage(x + half/2, y, half, img, color)
     ############################
-    pushl   24(%ebp)               # color
-    pushl   20(%ebp)               # &img
+    pushl   24(%ebp)      
+    pushl   20(%ebp)               
 
-    pushl   %ebx                   # size = half
+    pushl   %ebx                   
 
-    pushl   12(%ebp)               # y
+    pushl   12(%ebp)             
 
-    movl    %ebx, %eax             # eax = half
-    shrl    $1, %eax               # eax = half / 2
-    addl    8(%ebp), %eax          # x + half/2
+    movl    %ebx, %eax          
+    shrl    $1, %eax              
+    addl    8(%ebp), %eax          
     pushl   %eax
 
     call    sierpinskiImage

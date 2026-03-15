@@ -39,64 +39,64 @@ crtFilter:
     pushl   %esi
     pushl   %edi
 
-    subl    $4, %esp              # variable locale: y
+    subl    $4, %esp              
 
-    movl    $0, -4(%ebp)          # y = 0
+    movl    $0, -4(%ebp)         
 
 y_loop:
     /* if (y >= img.hauteur) end */
-    movl    8(%ebp), %eax         # &img
-    movl    -4(%ebp), %ecx        # y
-    cmpl    4(%eax), %ecx         # comparer y avec hauteur
+    movl    8(%ebp), %eax         
+    movl    -4(%ebp), %ecx       
+    cmpl    4(%eax), %ecx       
     jge     end_crt
 
-    movl    $0, %edi              # x = 0
+    movl    $0, %edi              
 
 x_loop: # if (x >= img.largeur) prochaine ligne
-    movl    8(%ebp), %eax         # &img
-    cmpl    0(%eax), %edi         # comparer x avec largeur
+    movl    8(%ebp), %eax       
+    cmpl    0(%eax), %edi         
     jge     next_row
 
     # récupérer l'adresse du pixel img.pixels[y][x]
-    movl    8(%eax), %ebx         # ebx = img.pixels (Pixel**)
-    movl    -4(%ebp), %ecx        # ecx = y
-    movl    (%ebx,%ecx,4), %esi   # esi = img.pixels[y] (Pixel*)
-    leal    (%esi,%edi,4), %esi   # esi = &img.pixels[y][x]
+    movl    8(%eax), %ebx        
+    movl    -4(%ebp), %ecx        
+    movl    (%ebx,%ecx,4), %esi   
+    leal    (%esi,%edi,4), %esi   
 
     # si y % scanlineSpacing == 0 => applyScanline(pixel, 60)
-    movl    -4(%ebp), %eax        # eax = y
+    movl    -4(%ebp), %eax        
     xorl    %edx, %edx
-    movl    12(%ebp), %ecx        # ecx = scanlineSpacing
-    divl    %ecx                  # reste dans edx
+    movl    12(%ebp), %ecx        
+    divl    %ecx                  
     cmpl    $0, %edx
     jne     skip_scanline
 
-    pushl   less_color            # 60
-    pushl   %esi                  # &pixel
+    pushl   less_color            
+    pushl   %esi                 
     call    applyScanline
     addl    $8, %esp
 
 skip_scanline:
     # applyPhosphor(pixel, x % 3)
-    movl    %edi, %eax            # eax = x
+    movl    %edi, %eax          
     xorl    %edx, %edx
-    movl    max_index, %ecx       # ecx = 3
-    divl    %ecx                  # reste dans edx = x % 3
+    movl    max_index, %ecx       
+    divl    %ecx                  
 
-    pushl   %edx                  # subpixel
-    pushl   %esi                  # &pixel
+    pushl   %edx                  
+    pushl   %esi                  
     call    applyPhosphor
     addl    $8, %esp
 
-    incl    %edi                  # x++
+    incl    %edi                 
     jmp     x_loop
 
 next_row:
-    incl    -4(%ebp)              # y++
+    incl    -4(%ebp)            
     jmp     y_loop
 
 end_crt:
-    addl    $4, %esp              # enlever variable locale
+    addl    $4, %esp            
 
     popl    %edi
     popl    %esi
