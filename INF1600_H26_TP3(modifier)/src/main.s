@@ -13,7 +13,7 @@
 .data 
 
 inputCrt: 
-    .asciz "images/image.png"
+    .asciz "images/image.bmp"
 
 outputCrt:
     .asciz "crt.png"
@@ -27,35 +27,82 @@ outputSierpinski:
 
 main:
     # prologue
-    pushl   %ebp                      
-    movl    %esp, %ebp                  
+    pushl   %ebp
+    movl    %esp, %ebp
+
+    # 2 structures Image locales
+    # imgCrt        : -12(%ebp)
+    # imgSierpinski : -24(%ebp)
+    subl    $24, %esp
 
     #################### Filtre CRT #######################
 
-    # TODO: Charger l'image inputCrt en appelant loadImage()
+    # loadImage(inputCrt, imgCrt)
+    leal    -12(%ebp), %eax
+    pushl   %eax
+    pushl   $inputCrt
+    call    loadImage
+    addl    $8, %esp
 
-    # TODO: Appliquer le filtre crtFilter() sur cette image
+    testl   %eax, %eax
+    jz      end_main
 
-    # TODO: Sauvegarder cette image dans le fichier outputCrt avec saveImage()
+    # crtFilter(imgCrt, 2)
+    pushl   $2
+    leal    -12(%ebp), %eax
+    pushl   %eax
+    call    crtFilter
+    addl    $8, %esp
 
-    # TODO: Libérer la mémoire de vos images avec freeImage()
+    # saveImage(outputCrt, imgCrt)
+    leal    -12(%ebp), %eax
+    pushl   %eax
+    pushl   $outputCrt
+    call    saveImage
+    addl    $8, %esp
+
+    # freeImage(imgCrt)
+    leal    -12(%ebp), %eax
+    pushl   %eax
+    call    freeImage
+    addl    $4, %esp
 
     #################### Triangle de Sierpinski #######################
 
+    # createImage(1024, 1024) -> imgSierpinski
+    leal    -24(%ebp), %eax
+    pushl   $1024
+    pushl   $1024
+    pushl   %eax
+    call    createImage
+    addl    $8, %esp
 
-    # TODO: Créer une image vide de taille d'une puissance de 2 en appelant createImage()
-    # Puisque createImage() retourne une struct Image, il faut d’abord allouer de l’espace sur la pile pour l’image, puit push l’adresse de cet espace comme 3e paramètre avant de call la fonction.
+    # sierpinskiImage(0, 0, 1024, imgSierpinski, {227,171,59,255})
+    # Pixel = r,g,b,a = E3 AB 3B FF
+    # little-endian 32-bit immediate = 0xFF3BABE3
+    pushl   $0xFF3BABE3
+    leal    -24(%ebp), %eax
+    pushl   %eax
+    pushl   $1024
+    pushl   $0
+    pushl   $0
+    call    sierpinskiImage
+    addl    $20, %esp
 
-    # TODO: Dessiner le triangle de Sierpinski avec la fonction récursive sierpinskiImage()
+    # saveImage(outputSierpinski, imgSierpinski)
+    leal    -24(%ebp), %eax
+    pushl   %eax
+    pushl   $outputSierpinski
+    call    saveImage
+    addl    $8, %esp
 
-    # TODO: Sauvegarder cette image dans le fichier outputSierpinski avec saveImage()
+    # freeImage(imgSierpinski)
+    leal    -24(%ebp), %eax
+    pushl   %eax
+    call    freeImage
+    addl    $4, %esp
 
-    # TODO: Libérer la mémoire de vos images avec freeImage()
-
-
-
-
+end_main:
     movl    $0, %eax
-    # epilogue
-    leave 
-    ret   
+    leave
+    ret
